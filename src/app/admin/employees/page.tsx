@@ -2,9 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth, withAuth } from '@/lib/auth';
+import { getEmployees } from '@/lib/sample-data';
 
-// Componente para la gestión de empleados
+// Componente protegido que solo pueden ver los administradores
 function AdminEmployeesPage() {
+  const { user } = useAuth();
   const router = useRouter();
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,9 +16,7 @@ function AdminEmployeesPage() {
     // Cargar empleados al montar el componente
     const loadEmployees = () => {
       try {
-        // Obtener empleados del localStorage
-        const storedEmployees = localStorage.getItem('timetracker_employees');
-        const employeesList = storedEmployees ? JSON.parse(storedEmployees) : getSampleEmployees();
+        const employeesList = getEmployees();
         setEmployees(employeesList);
       } catch (error) {
         console.error('Error al cargar empleados:', error);
@@ -26,39 +27,6 @@ function AdminEmployeesPage() {
 
     loadEmployees();
   }, []);
-
-  // Función para obtener empleados de muestra si no hay datos en localStorage
-  const getSampleEmployees = () => {
-    return [
-      {
-        id: 'EMP001',
-        name: 'Carlos Rodríguez',
-        email: 'carlos@example.com',
-        department: 'Operaciones',
-        position: 'Gerente de Operaciones',
-        startDate: '2023-01-15',
-        status: 'active'
-      },
-      {
-        id: 'EMP002',
-        name: 'Ana Martínez',
-        email: 'ana@example.com',
-        department: 'Administración',
-        position: 'Contadora',
-        startDate: '2023-02-10',
-        status: 'active'
-      },
-      {
-        id: 'EMP003',
-        name: 'Miguel Sánchez',
-        email: 'miguel@example.com',
-        department: 'Ventas',
-        position: 'Representante de Ventas',
-        startDate: '2023-03-05',
-        status: 'active'
-      }
-    ];
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -132,5 +100,5 @@ function AdminEmployeesPage() {
   );
 }
 
-// Exportar el componente
-export default AdminEmployeesPage;
+// Exportar el componente con protección de rol 'admin'
+export default withAuth(AdminEmployeesPage, 'admin');

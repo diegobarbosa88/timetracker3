@@ -458,7 +458,7 @@ export default function ReportsPage() {
         reportData.data.forEach((employee: EmployeeRecord) => {
           // Añadir encabezado de empleado
           excelData.push([`Empleado: ${employee.name}`, `Departamento: ${employee.department}`]);
-          excelData.push(['Total de días trabajados:', employee.totalDays]);
+          excelData.push(['Total de días trabajados:', String(employee.totalDays)]);
           excelData.push(['Total de horas trabajadas:', `${employee.totalHours}h ${employee.totalRemainingMinutes}m`]);
           excelData.push(['Promedio diario:', `${employee.avgDailyHours}h ${employee.avgDailyRemainingMinutes}m`]);
           excelData.push(['']);

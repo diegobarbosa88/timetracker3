@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { saveEmployee } from '@/lib/sample-data';
 
 export default function AddEmployeePage() {
   const router = useRouter();
@@ -38,40 +39,17 @@ export default function AddEmployeePage() {
         return;
       }
 
-      // Generar ID único para el nuevo empleado
-      const newEmployeeId = 'EMP' + Date.now().toString().slice(-6);
+      // Guardar empleado usando la función de sample-data.js
+      const result = saveEmployee(formData);
       
-      // Crear objeto de empleado
-      const newEmployee = {
-        id: newEmployeeId,
-        name: formData.name,
-        email: formData.email,
-        department: formData.department,
-        position: formData.position,
-        startDate: formData.startDate,
-        status: 'active'
-      };
-      
-      // Obtener empleados existentes del localStorage
-      let employees = [];
-      try {
-        const storedEmployees = localStorage.getItem('timetracker_employees');
-        if (storedEmployees) {
-          employees = JSON.parse(storedEmployees);
-        }
-      } catch (err) {
-        console.error('Error al leer empleados del localStorage:', err);
+      if (result.success) {
+        // Mostrar mensaje de éxito y redirigir
+        alert('Empleado añadido correctamente');
+        router.push('/admin/employees');
+      } else {
+        setError(result.error || 'Error al guardar el empleado');
+        setIsSubmitting(false);
       }
-      
-      // Añadir nuevo empleado
-      employees.push(newEmployee);
-      
-      // Guardar en localStorage
-      localStorage.setItem('timetracker_employees', JSON.stringify(employees));
-      
-      // Mostrar mensaje de éxito y redirigir
-      alert('Empleado añadido correctamente');
-      router.push('/admin/employees');
     } catch (err) {
       console.error('Error al guardar empleado:', err);
       setError('Ocurrió un error al guardar el empleado');
