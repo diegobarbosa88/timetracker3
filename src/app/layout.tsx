@@ -110,6 +110,7 @@ function Header() {
               {isAuthenticated && (
                 <>
                   <a href="/dashboard" className="nav-link px-3 py-2 text-sm font-medium">Dashboard</a>
+                  <a href="/cronometro" className="nav-link px-3 py-2 text-sm font-medium">Cronómetro</a>
                   {user?.role === 'admin' && (
                     <a href="/admin/employees" className="nav-link px-3 py-2 text-sm font-medium">Empleados</a>
                   )}
