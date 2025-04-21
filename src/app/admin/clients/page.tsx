@@ -1,9 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getClients, deleteClient, toggleClientStatus } from '../../../lib/client-management';
 import { useAuth } from '../../../lib/auth';
+
+// Definir la interfaz para los errores
+interface FormErrors {
+  [key: string]: string | undefined;
+}
 
 export default function ClientsPage() {
   const { user, isAuthenticated, isAdmin } = useAuth();
@@ -14,7 +19,7 @@ export default function ClientsPage() {
   const [clientToDelete, setClientToDelete] = useState(null);
 
   // Cargar clientes al montar el componente
-  useEffect(() => {
+  React.useEffect(() => {
     loadClients();
   }, []);
 

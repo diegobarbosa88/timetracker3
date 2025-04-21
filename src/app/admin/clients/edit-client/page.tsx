@@ -5,6 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getClients, saveClient } from '../../../../lib/client-management';
 import { useAuth } from '../../../../lib/auth';
 
+// Definir la interfaz para los errores
+interface FormErrors {
+  name?: string;
+  customTag?: string;
+  submit?: string;
+  [key: string]: string | undefined;
+}
+
 export default function EditClientPage() {
   const { user, isAuthenticated, isAdmin } = useAuth();
   const router = useRouter();
@@ -22,7 +30,7 @@ export default function EditClientPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   // Cargar datos del cliente al montar el componente
   useEffect(() => {
@@ -35,7 +43,7 @@ export default function EditClientPage() {
   }, [clientId]);
 
   // Función para cargar datos del cliente
-  const loadClientData = (id) => {
+  const loadClientData = (id: string) => {
     setIsLoading(true);
     const clients = getClients();
     const client = clients.find(c => c.id === id);
@@ -58,8 +66,10 @@ export default function EditClientPage() {
   };
 
   // Manejar cambios en los campos del formulario
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
     setClientData({
       ...clientData,
       [name]: type === 'checkbox' ? checked : value
@@ -68,7 +78,7 @@ export default function EditClientPage() {
 
   // Validar formulario
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: FormErrors = {};
     
     if (!clientData.name.trim()) {
       newErrors.name = 'El nombre del cliente es obligatorio';
@@ -79,7 +89,7 @@ export default function EditClientPage() {
   };
 
   // Manejar envío del formulario
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
