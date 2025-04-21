@@ -4,6 +4,18 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth';
 import { getEmployeeClients } from '../../lib/client-management';
 
+// Definir la interfaz para los errores
+interface FormErrors {
+  date?: string;
+  entryTime?: string;
+  exitTime?: string;
+  clientId?: string;
+  tag?: string;
+  customTag?: string;
+  submit?: string;
+  [key: string]: string | undefined;
+}
+
 export default function ManualEntryPage() {
   const { user, isAuthenticated } = useAuth();
   const [availableClients, setAvailableClients] = useState([]);
@@ -18,7 +30,7 @@ export default function ManualEntryPage() {
   const [customTag, setCustomTag] = useState('');
   const [showCustomTag, setShowCustomTag] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [successMessage, setSuccessMessage] = useState('');
 
   // Lista de etiquetas predefinidas
@@ -48,7 +60,7 @@ export default function ManualEntryPage() {
   }, [isAuthenticated, user]);
 
   // Manejar cambios en los campos del formulario
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -63,7 +75,7 @@ export default function ManualEntryPage() {
 
   // Validar formulario
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: FormErrors = {};
     
     if (!formData.date) {
       newErrors.date = 'La fecha es obligatoria';
@@ -121,7 +133,7 @@ export default function ManualEntryPage() {
   };
 
   // Manejar envío del formulario
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -191,7 +203,7 @@ export default function ManualEntryPage() {
   };
 
   // Guardar registro de tiempo para el empleado
-  const saveTimeRecordForEmployee = (employeeId, timeRecord) => {
+  const saveTimeRecordForEmployee = (employeeId: string, timeRecord: any) => {
     try {
       // Obtener lista de empleados
       const storedEmployees = localStorage.getItem('timetracker_employees');
@@ -203,7 +215,7 @@ export default function ManualEntryPage() {
       const employees = JSON.parse(storedEmployees);
       
       // Encontrar el empleado
-      const employeeIndex = employees.findIndex(emp => emp.id === employeeId);
+      const employeeIndex = employees.findIndex((emp: any) => emp.id === employeeId);
       if (employeeIndex === -1) {
         console.error('No se encontró el empleado con ID:', employeeId);
         return;
@@ -228,10 +240,10 @@ export default function ManualEntryPage() {
   };
   
   // Guardar registro de tiempo para informes
-  const saveTimeRecordForReports = (timeRecord, userId) => {
+  const saveTimeRecordForReports = (timeRecord: any, userId: string) => {
     try {
       // Obtener registros existentes
-      let records = [];
+      let records: any[] = [];
       const storedRecords = localStorage.getItem('timetracker_records');
       
       if (storedRecords) {
