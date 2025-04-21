@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../lib/auth';
-import { sampleTimeRecords } from '../../lib/sample-data';
+import React from 'react';
+import { useAuth } from '@/lib/auth';
+import { sampleTimeRecords } from '@/lib/sample-data';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
@@ -10,17 +10,17 @@ import html2canvas from 'html2canvas';
 // Componente de informes accesible para administradores y empleados
 export default function ReportsPage() {
   const { user } = useAuth();
-  const [reportType, setReportType] = useState('attendance');
-  const [dateRange, setDateRange] = useState('week');
-  const [employeeFilter, setEmployeeFilter] = useState('all');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [reportGenerated, setReportGenerated] = useState(false);
-  const [reportData, setReportData] = useState(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadFormat, setDownloadFormat] = useState('');
+  const [reportType, setReportType] = React.useState('attendance');
+  const [dateRange, setDateRange] = React.useState('week');
+  const [employeeFilter, setEmployeeFilter] = React.useState('all');
+  const [isGenerating, setIsGenerating] = React.useState(false);
+  const [reportGenerated, setReportGenerated] = React.useState(false);
+  const [reportData, setReportData] = React.useState(null);
+  const [isDownloading, setIsDownloading] = React.useState(false);
+  const [downloadFormat, setDownloadFormat] = React.useState('');
   
   // Referencias para exportación
-  const reportRef = useRef(null);
+  const reportRef = React.useRef(null);
 
   // Función para generar el informe
   const generateReport = () => {
