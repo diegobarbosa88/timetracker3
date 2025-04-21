@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth, withAuth } from '../../../lib/auth';
-import { getEmployees } from '../../../lib/sample-data';
+import { useAuth, withAuth } from '../../../../lib/auth';
+import { getEmployees } from '../../../../lib/sample-data';
 
 // Componente protegido que solo pueden ver los administradores
 function AdminEmployeesPage() {
