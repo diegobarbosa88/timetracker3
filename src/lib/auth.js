@@ -1,176 +1,156 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 
-// Definir el contexto de autenticación
-const AuthContext = createContext(undefined);
+// Crear contexto de autenticación
+const AuthContext = createContext();
+
+// Hook personalizado para usar el contexto de autenticación
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
 
 // Proveedor de autenticación
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
-  // Verificar si hay un usuario en localStorage al cargar
+  // Cargar estado de autenticación al montar el componente
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem('timetracker_user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+        setIsAdmin(parsedUser.role === 'admin');
       } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('user');
+        console.error('Error al cargar usuario:', error);
+        localStorage.removeItem('timetracker_user');
       }
     }
     setLoading(false);
   }, []);
 
-  // Función de inicio de sesión
-  const login = async (credentials) => {
-    setLoading(true);
-    
-    try {
-      // Verificación de credenciales
-      let isValid = false;
-      let userData = null;
-      
-      if (credentials.type === 'admin' && credentials.email) {
-        // Datos de administrador para simulación (en una aplicación real, esto vendría de una base de datos)
-        const ADMIN_USER = {
+  // Función para iniciar sesión
+  const login = (userData) => {
+    // Validar credenciales
+    if (userData.role === 'admin') {
+      // Credenciales de administrador
+      if (userData.username === 'admin' && userData.password === 'admin123') {
+        const adminUser = {
           id: 'ADMIN001',
           name: 'Administrador',
-          email: 'admin@magneticplace.com',
-          password: 'admin123',
-          role: 'admin'
+          role: 'admin',
+          email: 'admin@magneticplace.com'
         };
+        setUser(adminUser);
+        setIsAuthenticated(true);
+        setIsAdmin(true);
+        localStorage.setItem('timetracker_user', JSON.stringify(adminUser));
+        return { success: true };
+      }
+    } else if (userData.role === 'employee') {
+      // Credenciales de empleado
+      // Buscar en la lista de empleados
+      const storedEmployees = localStorage.getItem('timetracker_employees');
+      if (storedEmployees) {
+        const employees = JSON.parse(storedEmployees);
+        const employee = employees.find(emp => 
+          emp.id === userData.username && emp.password === userData.password
+        );
         
-        isValid = 
-          credentials.email === ADMIN_USER.email && 
-          credentials.password === ADMIN_USER.password;
-        
-        if (isValid) {
-          userData = {
-            id: ADMIN_USER.id,
-            name: ADMIN_USER.name,
-            email: ADMIN_USER.email,
-            role: 'admin'
+        if (employee) {
+          const employeeUser = {
+            id: employee.id,
+            name: employee.name,
+            role: 'employee',
+            email: employee.email,
+            department: employee.department
           };
-        }
-      } else if (credentials.type === 'employee' && credentials.employeeId) {
-        // Buscar el empleado en localStorage
-        const storedEmployees = localStorage.getItem('timetracker_employees');
-        if (storedEmployees) {
-          const employees = JSON.parse(storedEmployees);
-          const employee = employees.find(emp => emp.id === credentials.employeeId);
-          
-          if (employee && employee.password === credentials.password) {
-            isValid = true;
-            userData = {
-              id: employee.id,
-              name: employee.name,
-              email: employee.email,
-              role: 'employee',
-              department: employee.department,
-              position: employee.position
-            };
-          }
+          setUser(employeeUser);
+          setIsAuthenticated(true);
+          setIsAdmin(false);
+          localStorage.setItem('timetracker_user', JSON.stringify(employeeUser));
+          return { success: true };
         }
       }
       
-      if (isValid && userData) {
-        // Guardar en localStorage
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-        
-        // Redirigir al dashboard después de iniciar sesión exitosamente
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 100);
-        
-        return true;
+      // Verificar empleados predefinidos
+      if (userData.username === 'EMP001' && userData.password === 'emp123') {
+        const employeeUser = {
+          id: 'EMP001',
+          name: 'Carlos Rodríguez',
+          role: 'employee',
+          email: 'carlos.rodriguez@magneticplace.com',
+          department: 'Operaciones'
+        };
+        setUser(employeeUser);
+        setIsAuthenticated(true);
+        setIsAdmin(false);
+        localStorage.setItem('timetracker_user', JSON.stringify(employeeUser));
+        return { success: true };
       }
-      
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    } finally {
-      setLoading(false);
     }
+    
+    // Credenciales inválidas
+    return { success: false, error: 'Credenciales inválidas' };
   };
 
-  // Función de cierre de sesión
+  // Función para cerrar sesión
   const logout = () => {
-    localStorage.removeItem('user');
     setUser(null);
-    router.push('/auth/login');
+    setIsAuthenticated(false);
+    setIsAdmin(false);
+    localStorage.removeItem('timetracker_user');
   };
 
-  // Verificar si el usuario tiene el rol requerido
-  const checkRole = (requiredRole) => {
-    if (!user) return false;
-    if (requiredRole === 'any') return true;
-    return user.role === requiredRole;
+  // Función para verificar si un usuario tiene acceso a una ruta
+  const hasAccess = (route) => {
+    if (!isAuthenticated) return false;
+    
+    // Rutas de administrador
+    if (route.startsWith('/admin') && !isAdmin) return false;
+    
+    return true;
   };
 
+  // Valor del contexto
   const value = {
     user,
-    isAuthenticated: !!user,
-    loading,
+    isAuthenticated,
+    isAdmin,
     login,
     logout,
-    checkRole
+    hasAccess,
+    loading
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-// Hook personalizado para usar el contexto de autenticación
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
-
-// Componente de protección de rutas
-export function withAuth(Component, requiredRole = 'any') {
-  return function ProtectedRoute(props) {
-    const { user, isAuthenticated, loading } = useAuth();
-    const router = useRouter();
-
-    useEffect(() => {
-      if (!loading && !isAuthenticated) {
-        router.push('/auth/login');
-      } else if (!loading && isAuthenticated && requiredRole !== 'any') {
-        if (user?.role !== requiredRole) {
-          // Redirigir a una página de acceso denegado o al dashboard
-          router.push('/dashboard');
-        }
-      }
-    }, [loading, isAuthenticated, user, router]);
-
+// Componente de orden superior para proteger rutas
+export function withAuth(Component) {
+  return function AuthenticatedComponent(props) {
+    const { isAuthenticated, loading } = useAuth();
+    
     if (loading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando...</p>
-          </div>
-        </div>
-      );
+      return <div>Cargando...</div>;
     }
-
+    
     if (!isAuthenticated) {
-      return null; // No renderizar nada mientras se redirige
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/login';
+      }
+      return null;
     }
-
-    if (requiredRole !== 'any' && user?.role !== requiredRole) {
-      return null; // No renderizar nada mientras se redirige
-    }
-
+    
     return <Component {...props} />;
   };
 }

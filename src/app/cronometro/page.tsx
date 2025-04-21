@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth';
+import { getEmployeeClients } from '../../lib/client-management';
 
 export default function CronometroPage() {
   const { user, isAuthenticated } = useAuth();
@@ -11,19 +12,12 @@ export default function CronometroPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [selectedClient, setSelectedClient] = useState('MAGNETIC PLACE');
+  const [selectedClient, setSelectedClient] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
   const [customTag, setCustomTag] = useState('');
   const [showCustomTag, setShowCustomTag] = useState(false);
+  const [availableClients, setAvailableClients] = useState([]);
   
-  // Lista de clientes (en una aplicación real, esto vendría de una API o base de datos)
-  const clients = [
-    'MAGNETIC PLACE',
-    'Cliente A',
-    'Cliente B',
-    'Cliente C'
-  ];
-
   // Lista de etiquetas predefinidas
   const tags = [
     'Desarrollo',
@@ -33,6 +27,19 @@ export default function CronometroPage() {
     'Administrativo',
     'Otro'
   ];
+
+  // Cargar clientes asignados al empleado
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const employeeClients = getEmployeeClients(user.id);
+      setAvailableClients(employeeClients);
+      
+      // Seleccionar el primer cliente por defecto si hay clientes disponibles
+      if (employeeClients.length > 0 && !selectedClient) {
+        setSelectedClient(employeeClients[0].id);
+      }
+    }
+  }, [isAuthenticated, user]);
 
   // Actualizar hora y fecha actual
   useEffect(() => {
@@ -91,6 +98,12 @@ export default function CronometroPage() {
   // Iniciar o pausar el cronómetro
   const toggleTimer = () => {
     if (!isRunning) {
+      // Validar que se haya seleccionado un cliente
+      if (!selectedClient) {
+        alert('Por favor, selecciona un cliente');
+        return;
+      }
+      
       // Validar que se haya seleccionado una etiqueta si se muestra el campo
       if (showCustomTag && !customTag && selectedTag === 'Otro') {
         alert('Por favor, ingresa una etiqueta personalizada');
@@ -99,6 +112,9 @@ export default function CronometroPage() {
 
       // Determinar la etiqueta final
       const finalTag = selectedTag === 'Otro' ? customTag : selectedTag;
+      
+      // Encontrar el nombre del cliente seleccionado
+      const clientName = availableClients.find(c => c.id === selectedClient)?.name || selectedClient;
       
       // Iniciar el cronómetro
       setStartTime(Date.now());
@@ -109,6 +125,7 @@ export default function CronometroPage() {
         userId: user?.id,
         userName: user?.name,
         clientId: selectedClient,
+        clientName: clientName,
         tag: finalTag,
         startTime: new Date().toISOString(),
         date: new Date().toLocaleDateString()
@@ -136,6 +153,7 @@ export default function CronometroPage() {
         userId: startRecord.userId,
         userName: startRecord.userName,
         clientId: startRecord.clientId,
+        clientName: startRecord.clientName,
         tag: startRecord.tag,
         startTime: startRecord.startTime,
         endTime: now.toISOString(),
@@ -155,12 +173,16 @@ export default function CronometroPage() {
         exit: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         total: `${hours}h ${minutes}m`,
         status: 'Completado',
-        client: startRecord.clientId,
-        tag: startRecord.tag
+        client: startRecord.clientName,
+        tag: startRecord.tag,
+        totalWorkTime: totalMinutes
       };
       
       // Guardar en el historial de registros del empleado
       saveTimeRecordForEmployee(startRecord.userId, timeRecord);
+      
+      // Guardar en los registros generales para informes
+      saveTimeRecordForReports(timeRecord, startRecord.userId);
       
       // Simulación de guardado
       console.log('Jornada completa registrada:', completeRecord);
@@ -208,6 +230,38 @@ export default function CronometroPage() {
       console.log('Registro guardado para el empleado:', employeeId);
     } catch (error) {
       console.error('Error al guardar el registro de tiempo:', error);
+    }
+  };
+  
+  // Guardar registro de tiempo para informes
+  const saveTimeRecordForReports = (timeRecord, userId) => {
+    try {
+      // Obtener registros existentes
+      let records = [];
+      const storedRecords = localStorage.getItem('timetracker_records');
+      
+      if (storedRecords) {
+        records = JSON.parse(storedRecords);
+      }
+      
+      // Añadir el nuevo registro con formato compatible con informes
+      records.push({
+        id: `TR${Date.now().toString().slice(-6)}-${userId}`,
+        userId: userId,
+        date: timeRecord.date,
+        entryTime: timeRecord.entry,
+        exitTime: timeRecord.exit,
+        client: timeRecord.client,
+        totalWorkTime: timeRecord.totalWorkTime,
+        usedEntryTolerance: false
+      });
+      
+      // Guardar en localStorage
+      localStorage.setItem('timetracker_records', JSON.stringify(records));
+      
+      console.log('Registro guardado para informes');
+    } catch (error) {
+      console.error('Error al guardar el registro para informes:', error);
     }
   };
   
@@ -294,17 +348,24 @@ export default function CronometroPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <label htmlFor="client" className="block text-gray-700 mb-2">Cliente</label>
-            <select
-              id="client"
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={selectedClient}
-              onChange={(e) => setSelectedClient(e.target.value)}
-              disabled={isRunning}
-            >
-              {clients.map((client) => (
-                <option key={client} value={client}>{client}</option>
-              ))}
-            </select>
+            {availableClients.length === 0 ? (
+              <div className="p-2 border border-yellow-300 bg-yellow-50 rounded text-yellow-800">
+                No tienes clientes asignados. Contacta con tu administrador.
+              </div>
+            ) : (
+              <select
+                id="client"
+                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={selectedClient}
+                onChange={(e) => setSelectedClient(e.target.value)}
+                disabled={isRunning}
+              >
+                <option value="">Selecciona un cliente</option>
+                {availableClients.map((client) => (
+                  <option key={client.id} value={client.id}>{client.name}</option>
+                ))}
+              </select>
+            )}
           </div>
           
           <div>
@@ -344,11 +405,11 @@ export default function CronometroPage() {
           
           <button
             onClick={toggleTimer}
-            disabled={!isRunning && (!selectedTag || (selectedTag === 'Otro' && !customTag))}
+            disabled={!isRunning && (!selectedClient || !selectedTag || (selectedTag === 'Otro' && !customTag))}
             className={`flex items-center justify-center px-6 py-3 rounded-md text-white font-medium ${
               isRunning 
                 ? 'bg-red-500 hover:bg-red-600' 
-                : (!selectedTag || (selectedTag === 'Otro' && !customTag))
+                : (!selectedClient || !selectedTag || (selectedTag === 'Otro' && !customTag))
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
             }`}
