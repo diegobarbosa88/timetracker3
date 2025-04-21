@@ -140,11 +140,7 @@ export default function ViewEmployeePage() {
     }
     
     // Ordenar registros por fecha (más reciente primero)
-    records.sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateB.getTime() - dateA.getTime();
-    });
+    records.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     setTimeRecords(records);
   };
@@ -204,9 +200,9 @@ export default function ViewEmployeePage() {
   const formatDate = (dateString) => {
     // Corregido: Usar tipos literales específicos en lugar de strings genéricas
     const options = { 
-      year: "numeric", 
-      month: "long", 
-      day: "numeric" 
+      year: "numeric" as const, 
+      month: "long" as const, 
+      day: "numeric" as const 
     };
     return new Date(dateString).toLocaleDateString('es-ES', options);
   };
