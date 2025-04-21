@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveEmployee } from '@/lib/sample-data';
+import { saveEmployee } from '../../../../lib/sample-data';
 
 export default function AddEmployeePage() {
   const router = useRouter();

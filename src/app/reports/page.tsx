@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/lib/auth';
-import { sampleTimeRecords } from '@/lib/sample-data';
+import { useAuth } from '../../lib/auth';
+import { sampleTimeRecords } from '../../lib/sample-data';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
