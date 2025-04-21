@@ -63,15 +63,18 @@ export function getUniqueClients() {
   return [...new Set(clients)];
 }
 
-// Definición de tipos para TypeScript
-export interface TimeRecord {
-  id: string;
-  userId: string;
-  date: string;
-  startTime: string;
-  endTime?: string;
-  totalWorkTime?: number;
-  clientTag?: string;
-  usedEntryTolerance: boolean;
-  usedExitTolerance: boolean;
-}
+// Definición de tipos para TypeScript usando JSDoc
+/**
+ * @typedef {Object} TimeRecord
+ * @property {string} id - Identificador único del registro
+ * @property {string} userId - ID del empleado
+ * @property {string} date - Fecha del registro (formato YYYY-MM-DD)
+ * @property {string} startTime - Hora de entrada
+ * @property {string} [endTime] - Hora de salida (opcional)
+ * @property {number} [totalWorkTime] - Tiempo total trabajado en minutos (opcional)
+ * @property {string} [clientTag] - Etiqueta del cliente (opcional)
+ * @property {boolean} usedEntryTolerance - Si se usó tolerancia en la entrada
+ * @property {boolean} usedExitTolerance - Si se usó tolerancia en la salida
+ */
+
+// No se usa la palabra clave 'interface' que solo es válida en archivos .ts
