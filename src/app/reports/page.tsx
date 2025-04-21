@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../../lib/auth';
-import { sampleTimeRecords } from '../../../lib/sample-data';
+import { useAuth } from '../../lib/auth';
+import { sampleTimeRecords } from '../../lib/sample-data';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
@@ -296,12 +296,12 @@ export default function ReportsPage() {
       const reportTitle = getReportTitle();
       
       // Preparamos los datos para CSV
-      let csvContent = 'Empleado,Departamento,' + getHeadersByReportType().join(',') + '\\n';
+      let csvContent = 'Empleado,Departamento,' + getHeadersByReportType().join(',') + '\n';
       
       // Añadimos los datos de cada empleado
       reportData.data.forEach(employee => {
         csvContent += `"${employee.name}","${employee.department}",` + 
-          getEmployeeDataByReportType(employee).map(d => `"${d}"`).join(',') + '\\n';
+          getEmployeeDataByReportType(employee).map(d => `"${d}"`).join(',') + '\n';
       });
       
       // Creamos el blob y lo descargamos
