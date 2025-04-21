@@ -288,4 +288,4 @@ function DashboardPage() {
 }
 
 // Exportar el componente con protección de autenticación (cualquier rol puede acceder)
-export default withAuth(DashboardPage, 'any');
+export default withAuth(DashboardPage);
