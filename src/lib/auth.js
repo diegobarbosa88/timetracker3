@@ -1,34 +1,10 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Definir tipos para TypeScript
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'employee';
-};
-
-type AuthContextType = {
-  user: User | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  login: (credentials: LoginCredentials) => Promise<boolean>;
-  logout: () => void;
-  checkRole: (requiredRole: string) => boolean;
-};
-
-type LoginCredentials = {
-  type: 'admin' | 'employee';
-  email?: string;
-  employeeId?: string;
-  password: string;
-};
-
-// Crear el contexto de autenticación
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Definir el contexto de autenticación
+const AuthContext = createContext(undefined);
 
 // Datos de usuarios para simulación (en una aplicación real, esto vendría de una base de datos)
 const USERS = {
@@ -49,8 +25,8 @@ const USERS = {
 };
 
 // Proveedor de autenticación
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -69,13 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Función de inicio de sesión
-  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+  const login = async (credentials) => {
     setLoading(true);
     
     try {
       // Simulación de verificación de credenciales
       let isValid = false;
-      let userData: User | null = null;
+      let userData = null;
       
       if (credentials.type === 'admin' && credentials.email) {
         isValid = 
@@ -129,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Verificar si el usuario tiene el rol requerido
-  const checkRole = (requiredRole: string): boolean => {
+  const checkRole = (requiredRole) => {
     if (!user) return false;
     if (requiredRole === 'any') return true;
     return user.role === requiredRole;
@@ -157,8 +133,8 @@ export function useAuth() {
 }
 
 // Componente de protección de rutas
-export function withAuth(Component: React.ComponentType, requiredRole: string = 'any') {
-  return function ProtectedRoute(props: any) {
+export function withAuth(Component, requiredRole = 'any') {
+  return function ProtectedRoute(props) {
     const { user, isAuthenticated, loading } = useAuth();
     const router = useRouter();
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth, withAuth } from '../../lib/auth';
+import { useAuth, withAuth } from '../lib/auth';
 
 // Componente protegido que solo pueden ver los administradores
 function AdminEmployeesPage() {
