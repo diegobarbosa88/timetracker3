@@ -5,6 +5,28 @@ import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 
+// Definición de tipos para TypeScript
+interface DailyRecord {
+  date: string;
+  entryTime: string;
+  exitTime: string;
+  totalWorkTime: number;
+  client: string;
+}
+
+interface EmployeeRecord {
+  id: string;
+  name: string;
+  department: string;
+  dailyRecords: DailyRecord[];
+  totalMinutes: number;
+  totalDays: number;
+  totalHours?: number;
+  totalRemainingMinutes?: number;
+  avgDailyHours?: number;
+  avgDailyRemainingMinutes?: number;
+}
+
 // Componente de informes
 export default function ReportsPage() {
   const [reportType, setReportType] = useState('daily');
@@ -12,7 +34,7 @@ export default function ReportsPage() {
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [isGenerating, setIsGenerating] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
-  const [reportData, setReportData] = useState(null);
+  const [reportData, setReportData] = useState<any>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadFormat, setDownloadFormat] = useState('');
   
@@ -34,7 +56,7 @@ export default function ReportsPage() {
   };
 
   // Función para generar datos de informe basados en los filtros
-  const generateReportData = (type, range, employee) => {
+  const generateReportData = (type: string, range: string, employee: string) => {
     // Obtener datos de empleados del localStorage o usar datos de muestra
     const employees = getEmployeesData();
     
@@ -71,7 +93,7 @@ export default function ReportsPage() {
     // Para informes diarios, agrupamos los registros por empleado y luego por fecha
     if (type === 'daily') {
       // Agrupar por empleado
-      const employeeRecords = {};
+      const employeeRecords: Record<string, EmployeeRecord> = {};
       
       // Inicializar estructura para cada empleado
       employees
@@ -107,7 +129,7 @@ export default function ReportsPage() {
       
       // Ordenar registros diarios por fecha (más reciente primero)
       Object.values(employeeRecords).forEach(empRecord => {
-        empRecord.dailyRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+        empRecord.dailyRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         
         // Calcular totales en formato legible
         empRecord.totalHours = Math.floor(empRecord.totalMinutes / 60);
@@ -130,7 +152,7 @@ export default function ReportsPage() {
     // Para otros tipos de informes (resumen)
     else {
       // Agrupamos los registros por empleado
-      const employeeRecords = {};
+      const employeeRecords: Record<string, any[]> = {};
       filteredRecords.forEach(record => {
         if (!employeeRecords[record.userId]) {
           employeeRecords[record.userId] = [];
@@ -324,7 +346,7 @@ export default function ReportsPage() {
   };
   
   // Función auxiliar para calcular días laborables en un rango
-  const getWorkingDaysInRange = (startDate, endDate) => {
+  const getWorkingDaysInRange = (startDate: Date, endDate: Date) => {
     let count = 0;
     const currentDate = new Date(startDate.getTime());
     
@@ -340,20 +362,20 @@ export default function ReportsPage() {
   };
   
   // Función para formatear minutos como horas y minutos
-  const formatMinutesToHoursMinutes = (totalMinutes) => {
+  const formatMinutesToHoursMinutes = (totalMinutes: number) => {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return `${hours}h ${minutes}m`;
   };
   
   // Función para formatear fecha
-  const formatDate = (dateString) => {
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('es-ES', options);
   };
   
   // Función para descargar el informe
-  const downloadReport = (format) => {
+  const downloadReport = (format: string) => {
     if (!reportData) return;
     
     setIsDownloading(true);
@@ -433,7 +455,7 @@ export default function ReportsPage() {
         ];
         
         // Para cada empleado
-        reportData.data.forEach(employee => {
+        reportData.data.forEach((employee: EmployeeRecord) => {
           // Añadir encabezado de empleado
           excelData.push([`Empleado: ${employee.name}`, `Departamento: ${employee.department}`]);
           excelData.push(['Total de días trabajados:', employee.totalDays]);
@@ -479,7 +501,7 @@ export default function ReportsPage() {
         ];
         
         // Añadimos los datos de cada empleado
-        reportData.data.forEach(employee => {
+        reportData.data.forEach((employee: any) => {
           const rowData = [
             employee.name,
             employee.department,
@@ -514,7 +536,7 @@ export default function ReportsPage() {
         let csvContent = '';
         
         // Para cada empleado
-        reportData.data.forEach(employee => {
+        reportData.data.forEach((employee: EmployeeRecord) => {
           // Añadir encabezado de empleado
           csvContent += `"Empleado:","${employee.name}","Departamento:","${employee.department}"\n`;
           csvContent += `"Total de días trabajados:","${employee.totalDays}"\n`;
@@ -548,9 +570,9 @@ export default function ReportsPage() {
         let csvContent = 'Empleado,Departamento,' + getHeadersByReportType().join(',') + '\n';
         
         // Añadimos los datos de cada empleado
-        reportData.data.forEach(employee => {
+        reportData.data.forEach((employee: any) => {
           csvContent += `"${employee.name}","${employee.department}",` + 
-            getEmployeeDataByReportType(employee).map(d => `"${d}"`).join(',') + '\n';
+            getEmployeeDataByReportType(employee).map((d: string) => `"${d}"`).join(',') + '\n';
         });
         
         // Creamos el blob y lo descargamos
@@ -600,7 +622,7 @@ export default function ReportsPage() {
   };
   
   // Función auxiliar para obtener datos de empleado según tipo de informe
-  const getEmployeeDataByReportType = (employee) => {
+  const getEmployeeDataByReportType = (employee: any) => {
     if (reportType === 'attendance') {
       return [
         `${employee.attendance.workedDays}/${employee.attendance.totalDays}`,
@@ -726,7 +748,7 @@ export default function ReportsPage() {
           {/* Informe diario detallado */}
           {reportType === 'daily' && (
             <div>
-              {reportData.data.map((employee, empIndex) => (
+              {reportData.data.map((employee: EmployeeRecord, empIndex: number) => (
                 <div key={employee.id} className="mb-8">
                   <div className="bg-gray-100 p-4 rounded-lg mb-4">
                     <h3 className="text-xl font-semibold">{employee.name}</h3>
@@ -803,7 +825,7 @@ export default function ReportsPage() {
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="text-lg font-medium mb-4">Resumen de Asistencia</h3>
               <div className="flex flex-wrap justify-around">
-                {reportData.data.map(employee => (
+                {reportData.data.map((employee: any) => (
                   <div key={employee.id} className="w-full md:w-1/3 p-2">
                     <div className="bg-white p-4 rounded-lg shadow">
                       <div className="text-center mb-2">{employee.name}</div>
@@ -835,7 +857,7 @@ export default function ReportsPage() {
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="text-lg font-medium mb-4">Distribución de Horas</h3>
               <div className="flex flex-wrap justify-around">
-                {reportData.data.map(employee => (
+                {reportData.data.map((employee: any) => (
                   <div key={employee.id} className="w-full md:w-1/3 p-2">
                     <div className="bg-white p-4 rounded-lg shadow">
                       <div className="text-center mb-2">{employee.name}</div>
@@ -870,7 +892,7 @@ export default function ReportsPage() {
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="text-lg font-medium mb-4">Rendimiento</h3>
               <div className="flex flex-wrap justify-around">
-                {reportData.data.map(employee => (
+                {reportData.data.map((employee: any) => (
                   <div key={employee.id} className="w-full md:w-1/3 p-2">
                     <div className="bg-white p-4 rounded-lg shadow">
                       <div className="text-center mb-2">{employee.name}</div>
@@ -940,7 +962,7 @@ export default function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {reportData.data.map(employee => (
+                  {reportData.data.map((employee: any) => (
                     <tr key={employee.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{employee.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.department}</td>
