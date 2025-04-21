@@ -101,7 +101,12 @@ export default function ViewEmployeePage() {
   ];
 
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    // Corregido: Usar tipos literales específicos en lugar de strings genéricas
+    const options = { 
+      year: "numeric" as const, 
+      month: "long" as const, 
+      day: "numeric" as const 
+    };
     return new Date(dateString).toLocaleDateString('es-ES', options);
   };
 
