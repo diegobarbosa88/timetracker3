@@ -85,6 +85,12 @@ export function AuthProvider({ children }) {
         // Guardar en localStorage
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
+        
+        // Redirigir al dashboard después de iniciar sesión exitosamente
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 100);
+        
         return true;
       }
       

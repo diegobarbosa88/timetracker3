@@ -1,13 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../lib/auth';
 
 export default function LoginPage() {
-  const [userType, setUserType] = useState<string | null>(null);
+  const [userType, setUserType] = useState(null);
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   
-  const handleSelectUserType = (type: string) => {
+  // Redirigir si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
+  
+  const handleSelectUserType = (type) => {
     setUserType(type);
   };
   
@@ -60,31 +69,30 @@ export default function LoginPage() {
   );
 }
 
-function AdminLoginForm({ onBack }: { onBack: () => void }) {
+function AdminLoginForm({ onBack }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     
     try {
-      // Simulación de inicio de sesión (en una implementación real, esto sería una llamada a la API)
-      if (email === 'admin@magneticplace.com' && password === 'admin123') {
-        // Guardar información de sesión
-        localStorage.setItem('user', JSON.stringify({
-          id: 'ADMIN001',
-          name: 'Administrador',
-          email: email,
-          role: 'admin'
-        }));
-        
-        // Redireccionar al dashboard
-        router.push('/dashboard');
+      // Usar la función login del contexto de autenticación
+      const success = await login({
+        type: 'admin',
+        email,
+        password
+      });
+      
+      if (success) {
+        // Redirección explícita al dashboard
+        window.location.href = '/dashboard';
       } else {
         setError('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
       }
@@ -166,31 +174,30 @@ function AdminLoginForm({ onBack }: { onBack: () => void }) {
   );
 }
 
-function EmployeeLoginForm({ onBack }: { onBack: () => void }) {
+function EmployeeLoginForm({ onBack }) {
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     
     try {
-      // Simulación de inicio de sesión (en una implementación real, esto sería una llamada a la API)
-      if (employeeId === 'EMP001' && password === 'emp123') {
-        // Guardar información de sesión
-        localStorage.setItem('user', JSON.stringify({
-          id: 'EMP001',
-          name: 'Carlos Rodríguez',
-          email: 'carlos.rodriguez@magneticplace.com',
-          role: 'employee'
-        }));
-        
-        // Redireccionar a la página principal de empleados
-        router.push('/dashboard');
+      // Usar la función login del contexto de autenticación
+      const success = await login({
+        type: 'employee',
+        employeeId,
+        password
+      });
+      
+      if (success) {
+        // Redirección explícita al dashboard
+        window.location.href = '/dashboard';
       } else {
         setError('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
       }
