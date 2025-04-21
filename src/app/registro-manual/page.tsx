@@ -106,7 +106,7 @@ export default function ManualEntryPage() {
       const entryDate = new Date(`2000-01-01T${formData.entryTime}`);
       const exitDate = new Date(`2000-01-01T${formData.exitTime}`);
       
-      if (exitDate <= entryDate) {
+      if (exitDate.getTime() <= entryDate.getTime()) {
         newErrors.exitTime = 'La hora de salida debe ser posterior a la hora de entrada';
       }
     }
@@ -122,9 +122,9 @@ export default function ManualEntryPage() {
     const entryDate = new Date(`2000-01-01T${formData.entryTime}`);
     const exitDate = new Date(`2000-01-01T${formData.exitTime}`);
     
-    if (exitDate <= entryDate) return '';
+    if (exitDate.getTime() <= entryDate.getTime()) return '';
     
-    const diffMs = exitDate - entryDate;
+    const diffMs = exitDate.getTime() - entryDate.getTime();
     const diffMinutes = Math.floor(diffMs / 60000);
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
@@ -152,7 +152,7 @@ export default function ManualEntryPage() {
       // Calcular tiempo trabajado en minutos
       const entryDate = new Date(`2000-01-01T${formData.entryTime}`);
       const exitDate = new Date(`2000-01-01T${formData.exitTime}`);
-      const diffMs = exitDate - entryDate;
+      const diffMs = exitDate.getTime() - entryDate.getTime();
       const totalMinutes = Math.floor(diffMs / 60000);
       
       // Formatear para almacenamiento
