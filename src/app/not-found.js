@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 
+// Página 404 simplificada que no depende del contexto de autenticación
 export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
