@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getClients, deactivateClient } from '@/lib/client-management';
+import ClientAuthWrapper from '@/lib/client-auth-wrapper';
 
 // Definir la interfaz para el cliente
 interface Client {
@@ -14,7 +15,7 @@ interface Client {
   updatedAt?: string;
 }
 
-const ClientsPage = () => {
+const ClientsPageContent = () => {
   // Definir el tipo correcto para el estado clients
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +33,7 @@ const ClientsPage = () => {
     setIsLoading(false);
   };
   
-  const handleDeactivateClient = (clientId) => {
+  const handleDeactivateClient = (clientId: string) => {
     if (window.confirm('¿Estás seguro de que deseas desactivar este cliente?')) {
       deactivateClient(clientId);
       loadClients();
@@ -132,7 +133,7 @@ const ClientsPage = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(client.createdAt).toLocaleDateString()}
+                    {client.createdAt ? new Date(client.createdAt).toLocaleDateString() : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link href={`/admin/clients/edit-client?id=${client.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
@@ -154,6 +155,15 @@ const ClientsPage = () => {
         </div>
       )}
     </div>
+  );
+};
+
+// Componente principal envuelto en ClientAuthWrapper para evitar errores de prerenderizado
+const ClientsPage = () => {
+  return (
+    <ClientAuthWrapper>
+      <ClientsPageContent />
+    </ClientAuthWrapper>
   );
 };
 
