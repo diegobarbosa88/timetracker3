@@ -1,28 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuración específica para Netlify
   output: 'export',
-  
-  // Desactivar optimización de imágenes (necesario para exportación estática)
   images: {
     unoptimized: true,
   },
-  
-  // Ignorar errores de TypeScript durante la compilación
   typescript: {
+    // Ignora errores de TypeScript durante la compilación
     ignoreBuildErrors: true,
   },
-  
-  // Ignorar errores de ESLint durante la compilación
   eslint: {
+    // Ignora errores de ESLint durante la compilación
     ignoreDuringBuilds: true,
-  },
-  
-  // Desactivar modo estricto de React
-  reactStrictMode: false,
-  
-  // Desactivar compresión minify
-  swcMinify: false
+  }
 }
 
 module.exports = nextConfig
