@@ -1,7 +1,6 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Exportar como sitio estático
+  // Configuración específica para Netlify
   output: 'export',
   
   // Desactivar optimización de imágenes (necesario para exportación estática)
@@ -27,22 +26,11 @@ const nextConfig = {
   // Desactivar modo estricto de React
   reactStrictMode: false,
   
-  // Desactivar prerenderizado de páginas específicas
-  exportPathMap: async function() {
-    return {
-      '/': { page: '/' },
-      '/dashboard': { page: '/dashboard' },
-      '/cronometro': { page: '/cronometro' },
-      '/registro-manual': { page: '/registro-manual' },
-      '/reports': { page: '/reports' },
-      '/auth/login': { page: '/auth/login' },
-      '/404': { page: '/404' },
-    };
-  },
-  
   // Desactivar compresión minify
   swcMinify: false,
   
   // Desactivar generación de sourcemaps
   productionBrowserSourceMaps: false,
 }
+
+module.exports = nextConfig
