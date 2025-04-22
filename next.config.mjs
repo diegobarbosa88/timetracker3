@@ -1,32 +1,47 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  // Configuración específica para Vercel
+// Archivo de configuración para exportación estática
+module.exports = {
+  // Exportar como sitio estático
+  output: 'export',
+  
+  // Desactivar optimización de imágenes (necesario para exportación estática)
+  images: {
+    unoptimized: true,
+  },
+  
   // Ignorar errores de TypeScript durante la compilación
   typescript: {
     ignoreBuildErrors: true,
   },
+  
   // Ignorar errores de ESLint durante la compilación
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Desactivar prerenderizado estático para evitar errores con hooks de autenticación
+  
+  // Desactivar prerenderizado estático
   experimental: {
-    // Esto evita que Next.js intente prerender páginas que usan hooks de cliente
     appDir: true,
   },
-  // Configuración para mejorar la compatibilidad con Vercel
+  
+  // Desactivar modo estricto de React
   reactStrictMode: false,
-  swcMinify: true,
-  // Configuración para evitar problemas con imágenes
-  images: {
-    domains: ['localhost'],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
+  
+  // Desactivar prerenderizado de páginas específicas
+  exportPathMap: async function() {
+    return {
+      '/': { page: '/' },
+      '/dashboard': { page: '/dashboard' },
+      '/cronometro': { page: '/cronometro' },
+      '/registro-manual': { page: '/registro-manual' },
+      '/reports': { page: '/reports' },
+      '/auth/login': { page: '/auth/login' },
+      '/404': { page: '/404' },
+    };
   },
+  
+  // Desactivar compresión minify
+  swcMinify: false,
+  
+  // Desactivar generación de sourcemaps
+  productionBrowserSourceMaps: false,
 }
-
-export default nextConfig;
