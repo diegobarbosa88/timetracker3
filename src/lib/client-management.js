@@ -3,21 +3,18 @@
 // Función para obtener todos los clientes
 export const getClients = () => {
   try {
-    // Verificar si estamos en el navegador (client-side)
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedClients = localStorage.getItem('timetracker_clients');
-      if (storedClients) {
-        const parsedClients = JSON.parse(storedClients);
-        if (Array.isArray(parsedClients) && parsedClients.length > 0) {
-          return parsedClients;
-        }
+    const storedClients = localStorage.getItem('timetracker_clients');
+    if (storedClients) {
+      const parsedClients = JSON.parse(storedClients);
+      if (Array.isArray(parsedClients) && parsedClients.length > 0) {
+        return parsedClients;
       }
     }
   } catch (error) {
     console.error('Error al obtener clientes:', error);
   }
   
-  // Datos de muestra si no hay datos en localStorage o estamos en server-side
+  // Datos de muestra si no hay datos en localStorage
   return [
     { id: 'CLI001', name: 'MAGNETIC PLACE', active: true },
     { id: 'CLI002', name: 'Cliente A', active: true },
@@ -29,11 +26,6 @@ export const getClients = () => {
 // Función para guardar un nuevo cliente
 export const saveClient = (clientData) => {
   try {
-    // Verificar si estamos en el navegador
-    if (typeof window === 'undefined') {
-      return { success: false, error: 'No se puede guardar en server-side' };
-    }
-    
     // Obtener lista actual de clientes
     const clients = getClients();
     
@@ -69,11 +61,6 @@ export const saveClient = (clientData) => {
 // Función para eliminar un cliente
 export const deleteClient = (clientId) => {
   try {
-    // Verificar si estamos en el navegador
-    if (typeof window === 'undefined') {
-      return { success: false, error: 'No se puede eliminar en server-side' };
-    }
-    
     // Obtener lista actual de clientes
     const clients = getClients();
     
@@ -93,11 +80,6 @@ export const deleteClient = (clientId) => {
 // Función para desactivar un cliente (alternativa a eliminar)
 export const toggleClientStatus = (clientId) => {
   try {
-    // Verificar si estamos en el navegador
-    if (typeof window === 'undefined') {
-      return { success: false, error: 'No se puede cambiar estado en server-side' };
-    }
-    
     // Obtener lista actual de clientes
     const clients = getClients();
     
@@ -121,20 +103,9 @@ export const toggleClientStatus = (clientId) => {
   }
 };
 
-// Alias para deactivateClient (para mantener compatibilidad)
-export const deactivateClient = (clientId) => {
-  const result = toggleClientStatus(clientId);
-  return result;
-};
-
 // Función para asociar clientes a un empleado
 export const assignClientsToEmployee = (employeeId, clientIds) => {
   try {
-    // Verificar si estamos en el navegador
-    if (typeof window === 'undefined') {
-      return { success: false, error: 'No se puede asignar en server-side' };
-    }
-    
     // Obtener lista de empleados
     const storedEmployees = localStorage.getItem('timetracker_employees');
     if (!storedEmployees) {
@@ -165,11 +136,6 @@ export const assignClientsToEmployee = (employeeId, clientIds) => {
 // Función para obtener los clientes asignados a un empleado
 export const getEmployeeClients = (employeeId) => {
   try {
-    // Verificar si estamos en el navegador
-    if (typeof window === 'undefined') {
-      return [];
-    }
-    
     // Obtener lista de empleados
     const storedEmployees = localStorage.getItem('timetracker_employees');
     if (!storedEmployees) {

@@ -5,14 +5,6 @@ import { useRouter } from 'next/navigation';
 import { saveClient } from '../../../../lib/client-management';
 import { useAuth } from '../../../../lib/auth';
 
-// Definir la interfaz para los errores
-interface FormErrors {
-  name?: string;
-  customTag?: string;
-  submit?: string;
-  [key: string]: string | undefined;
-}
-
 export default function AddClientPage() {
   const { user, isAuthenticated, isAdmin } = useAuth();
   const router = useRouter();
@@ -25,13 +17,11 @@ export default function AddClientPage() {
     active: true
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState({});
 
   // Manejar cambios en los campos del formulario
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setClientData({
       ...clientData,
       [name]: type === 'checkbox' ? checked : value
@@ -40,7 +30,7 @@ export default function AddClientPage() {
 
   // Validar formulario
   const validateForm = () => {
-    const newErrors: FormErrors = {};
+    const newErrors = {};
     
     if (!clientData.name.trim()) {
       newErrors.name = 'El nombre del cliente es obligatorio';
@@ -51,7 +41,7 @@ export default function AddClientPage() {
   };
 
   // Manejar envío del formulario
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     
     if (!validateForm()) {

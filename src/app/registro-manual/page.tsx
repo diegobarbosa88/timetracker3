@@ -4,18 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth';
 import { getEmployeeClients } from '../../lib/client-management';
 
-// Definir la interfaz para los errores
-interface FormErrors {
-  date?: string;
-  entryTime?: string;
-  exitTime?: string;
-  clientId?: string;
-  tag?: string;
-  customTag?: string;
-  submit?: string;
-  [key: string]: string | undefined;
-}
-
 export default function ManualEntryPage() {
   const { user, isAuthenticated } = useAuth();
   const [availableClients, setAvailableClients] = useState([]);
@@ -30,7 +18,7 @@ export default function ManualEntryPage() {
   const [customTag, setCustomTag] = useState('');
   const [showCustomTag, setShowCustomTag] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
 
   // Lista de etiquetas predefinidas
@@ -60,7 +48,7 @@ export default function ManualEntryPage() {
   }, [isAuthenticated, user]);
 
   // Manejar cambios en los campos del formulario
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -75,7 +63,7 @@ export default function ManualEntryPage() {
 
   // Validar formulario
   const validateForm = () => {
-    const newErrors: FormErrors = {};
+    const newErrors = {};
     
     if (!formData.date) {
       newErrors.date = 'La fecha es obligatoria';
@@ -106,7 +94,7 @@ export default function ManualEntryPage() {
       const entryDate = new Date(`2000-01-01T${formData.entryTime}`);
       const exitDate = new Date(`2000-01-01T${formData.exitTime}`);
       
-      if (exitDate.getTime() <= entryDate.getTime()) {
+      if (exitDate <= entryDate) {
         newErrors.exitTime = 'La hora de salida debe ser posterior a la hora de entrada';
       }
     }
@@ -122,9 +110,9 @@ export default function ManualEntryPage() {
     const entryDate = new Date(`2000-01-01T${formData.entryTime}`);
     const exitDate = new Date(`2000-01-01T${formData.exitTime}`);
     
-    if (exitDate.getTime() <= entryDate.getTime()) return '';
+    if (exitDate <= entryDate) return '';
     
-    const diffMs = exitDate.getTime() - entryDate.getTime();
+    const diffMs = exitDate - entryDate;
     const diffMinutes = Math.floor(diffMs / 60000);
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
@@ -133,7 +121,7 @@ export default function ManualEntryPage() {
   };
 
   // Manejar envío del formulario
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -152,7 +140,7 @@ export default function ManualEntryPage() {
       // Calcular tiempo trabajado en minutos
       const entryDate = new Date(`2000-01-01T${formData.entryTime}`);
       const exitDate = new Date(`2000-01-01T${formData.exitTime}`);
-      const diffMs = exitDate.getTime() - entryDate.getTime();
+      const diffMs = exitDate - entryDate;
       const totalMinutes = Math.floor(diffMs / 60000);
       
       // Formatear para almacenamiento
@@ -203,7 +191,7 @@ export default function ManualEntryPage() {
   };
 
   // Guardar registro de tiempo para el empleado
-  const saveTimeRecordForEmployee = (employeeId: string, timeRecord: any) => {
+  const saveTimeRecordForEmployee = (employeeId, timeRecord) => {
     try {
       // Obtener lista de empleados
       const storedEmployees = localStorage.getItem('timetracker_employees');
@@ -215,7 +203,7 @@ export default function ManualEntryPage() {
       const employees = JSON.parse(storedEmployees);
       
       // Encontrar el empleado
-      const employeeIndex = employees.findIndex((emp: any) => emp.id === employeeId);
+      const employeeIndex = employees.findIndex(emp => emp.id === employeeId);
       if (employeeIndex === -1) {
         console.error('No se encontró el empleado con ID:', employeeId);
         return;
@@ -240,10 +228,10 @@ export default function ManualEntryPage() {
   };
   
   // Guardar registro de tiempo para informes
-  const saveTimeRecordForReports = (timeRecord: any, userId: string) => {
+  const saveTimeRecordForReports = (timeRecord, userId) => {
     try {
       // Obtener registros existentes
-      let records: any[] = [];
+      let records = [];
       const storedRecords = localStorage.getItem('timetracker_records');
       
       if (storedRecords) {
