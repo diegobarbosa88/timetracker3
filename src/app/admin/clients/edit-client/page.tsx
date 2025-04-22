@@ -4,6 +4,14 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+// Definir la interfaz para los errores
+interface FormErrors {
+  name?: string;
+  customTag?: string;
+  submit?: string;
+  [key: string]: string | undefined;
+}
+
 const EditClientPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,7 +24,9 @@ const EditClientPage = () => {
     customTag: '',
     active: true
   });
-  const [errors, setErrors] = useState({});
+  
+  // Usar la interfaz FormErrors para el estado de errores
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -75,7 +85,8 @@ const EditClientPage = () => {
 
   // Validar formulario
   const validateForm = () => {
-    const newErrors = {};
+    // Inicializar newErrors como un objeto que cumple con la interfaz FormErrors
+    const newErrors: FormErrors = {};
     
     if (!clientData.name.trim()) {
       newErrors.name = 'El nombre del cliente es obligatorio';
