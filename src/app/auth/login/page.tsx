@@ -38,7 +38,10 @@ export default function LoginPage() {
 
     try {
       const result = login(formData);
-      
+
+      if (l.As && l.As.user) {
+    // destructure 'user' property here
+}
       if (result.success) {
         // Redireccionar según el rol
         if (formData.role === 'admin') {
